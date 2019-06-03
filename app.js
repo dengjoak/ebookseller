@@ -15,14 +15,31 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 // Set Static Folder
-app.use(
-  express.static(`
-${__dirname}/public`)
-);
+app.use(express.static(`${__dirname}/public`));
 
 // Index Route
 app.get("/", (req, res) => {
   res.render("index");
+});
+
+// Charge Route
+app.post("/charge", (req, res) => {
+  const amount = 2500;
+
+  stripe.customers
+    .create({
+      email: req.body.stripeEmail,
+      source: req.body.stripeToken
+    })
+    .then(customer =>
+      stripe.charges.create({
+        amount,
+        description: "Web Develeopment Ebook",
+        currency: "usd",
+        customer: customer.id
+      })
+    )
+    .then(charge => res.render("success"));
 });
 
 const port = process.env.PORT || 5000;
